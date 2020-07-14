@@ -208,12 +208,12 @@ bool watchdog_pi::DeInit(void)
 
 int watchdog_pi::GetAPIVersionMajor()
 {
-    return MY_API_VERSION_MAJOR;
+    return OCPN_API_VERSION_MAJOR;
 }
 
 int watchdog_pi::GetAPIVersionMinor()
 {
-    return MY_API_VERSION_MINOR;
+    return OCPN_API_VERSION_MINOR;
 }
 
 int watchdog_pi::GetPlugInVersionMajor()
@@ -224,6 +224,21 @@ int watchdog_pi::GetPlugInVersionMajor()
 int watchdog_pi::GetPlugInVersionMinor()
 {
     return PLUGIN_VERSION_MINOR;
+}
+
+int watchdog_pi::GetPlugInVersionPatch()
+{
+    return PLUGIN_VERSION_PATCH;
+}
+
+const char* watchdog_pi::GetPlugInVersionPre()
+{
+    return "";
+}
+
+const char* watchdog_pi::GetPlugInVersionBuild()
+{
+    return "";
 }
 
 wxBitmap *watchdog_pi::GetPlugInBitmap()
