@@ -98,7 +98,7 @@ extern "C" DECL_EXP void destroy_pi(opencpn_plugin* p)
 watchdog_pi *g_watchdog_pi = NULL;
 
 watchdog_pi::watchdog_pi(void *ppimgr)
-    : opencpn_plugin_113(ppimgr)
+    : opencpn_plugin_116(ppimgr)
 {
     // Create the PlugIn icons
     initialize_images();
@@ -226,20 +226,20 @@ int watchdog_pi::GetPlugInVersionMinor()
     return PLUGIN_VERSION_MINOR;
 }
 
-int watchdog_pi::GetPlugInVersionPatch()
-{
-    return PLUGIN_VERSION_PATCH;
-}
+//int watchdog_pi::GetPlugInVersionPatch()
+//{
+//    return PLUGIN_VERSION_PATCH;
+//}
 
-const char* watchdog_pi::GetPlugInVersionPre()
-{
-    return "";
-}
+//const char* watchdog_pi::GetPlugInVersionPre()
+//{
+//    return "";
+//}
 
-const char* watchdog_pi::GetPlugInVersionBuild()
-{
-    return "";
-}
+//const char* watchdog_pi::GetPlugInVersionBuild()
+//{
+//    return "";
+//}
 
 wxBitmap *watchdog_pi::GetPlugInBitmap()
 {
