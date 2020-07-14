@@ -27,6 +27,9 @@
 # ---------------------------------------------------------------------------
 # ----- Modify section below to include all the details for your plugin ----- ##
 
+
+set(CMLOC "CMakeLists: ")
+
 cmake_minimum_required(VERSION 3.1.1)
 if(COMMAND cmake_policy)
   if(POLICY CMP0043)
@@ -420,14 +423,14 @@ ADD_DEFINITIONS(-DTIXML_USE_STL)
 #
 #----INCLUDE CMAKE #3 & #4 -----
 #INCLUDE("cmake/PluginGL.cmake")
-INCLUDE("cmake/PluginNMEA.cmake") #not for wxfax
-INCLUDE("cmake/PluginJSON.cmake")  #not for wxfax
-INCLUDE("cmake/PluginXML.cmake")
+INCLUDE("PluginNMEA") #not for wxfax
+INCLUDE("PluginJSON")  #not for wxfax
+INCLUDE("PluginXML")
 
 
 # ----- Do not change - needed to build app ----- ##
 #
 #INCLUDE CMAKE #5,6 & 7 -----
-INCLUDE("cmake/PluginInstall.cmake")
-INCLUDE("cmake/PluginLocalization.cmake")
-INCLUDE("cmake/PluginPackage.cmake")
+INCLUDE("PluginInstall")
+INCLUDE("PluginLocalization")
+INCLUDE("PluginPackage")
