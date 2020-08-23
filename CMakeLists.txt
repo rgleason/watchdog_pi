@@ -20,7 +20,7 @@
 ## *   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx                                       *
 #-----------------------------------------------------------------------------
 # Frontend2 Author: Jon Gough  
-# Frontend2: v1.0.126
+# Frontend2: v1.0.132
 # ---------------------------------------------------------------------------
 
 ## ----- When changing this file do NOT change the order in which sections occur        ----- ##
@@ -30,7 +30,6 @@
 # ----- Modify section below to include all the details for your plugin ----- ##
 
 set(CMLOC "CMakeLists: ")
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # define minimum cmake version
 cmake_minimum_required(VERSION 3.1.1)
@@ -45,37 +44,41 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 
 # define plugin name, owner and versions
-SET(VERBOSE_NAME Watchdog)
+set(VERBOSE_NAME Watchdog)
 set(COMMON_NAME "Watchdog") # Search "getcommonname"in watchdog_pi.cpp
-
 set(TITLE_NAME "Watchdog")
 set(PACKAGE_CONTACT "Sean d'Epagnier")
 SET(PACKAGE "watchdog_pi")
+set(SHORT_DESCRIPTION "Implement watchdog ability for OpenCPN")
+set(LONG_DESCRIPTION "Multiple Configurable alarms for  changing conditions for boundaries, cog, landfall, ais, wind, nmea, weather, pypilot, wind, deadman, etc.")
 
 set(VERSION_MAJOR "2")
 set(VERSION_MINOR "4")
 set(VERSION_PATCH "19")
-set(VERSION_TWEAK "0")
-set(VERSION_DATE "07/14/2020")
+set(VERSION_TWEAK "1")
+set(VERSION_DATE "08-22-2020")
 set(OCPN_MIN_VERSION "ov50")
 set(OCPN_API_VERSION_MAJOR "1")
 set(OCPN_API_VERSION_MINOR "16")
 
 set(PARENT "opencpn")
 
-#Used to set up a local webserver with git loaded, for testing purposes.
-set(GIT_REPOSITORY_SERVER "github.com")
+# The next line allows setup of a local webserver with git for testing purposes.
+# The default is shown below, but it is done in cmake/pluginconfigure.cmake now.
+# This default is needed to build locally and to build flatpak.
+#set(GIT_REPOSITORY_SERVER "github.com")
 
 #No longer needed, queried.
 #set(GIT_USER "rgleason")
 #set(GIT_REPOSITORY_NAME "watchdog_pi")
 
-# Set Cloudsmith upload repository suffix for each catalog
-set(PROD "prod") #Standard Repos
-set(BETA "beta") #Standard Repos
-set(ALPHA "alpha") #Standard Repos
+# Specifies Cloudsmith upload repository suffix for each catalog
+set(PROD "prod")    #Standard Repos
+set(BETA "beta")    #Standard Repos
+set(ALPHA "alpha")  #Standard Repos
 
-#set(CLOUDSMITH_USER "sean-depagnier")
+#set(CLOUDSMITH_USER "jon-gough")
+#set(CLOUDSMITH_USER "rick-gleason")
 set(CLOUDSMITH_USER "opencpn")
 
 # Set if yourCloudsmith Base Repository name does not match your Git Repository name.
@@ -84,8 +87,8 @@ set (CLOUDSMITH_BASE_REPOSITORY "watchdog")  #without the pi
 
 # Set Plugin info-url, summary and description
 set(XML_INFO_URL "https://opencpn.org/OpenCPN/plugins/watchdog.html")
-set(XML_SUMMARY "Implement watchdog ability for opencpn")
-set(XML_DESCRIPTION "Multiple Configurable alarms for  changing conditions for boundaries, cog, landfall, ais, wind, nmea, weather, pypilot, wind, deadman, etc.")
+set(XML_SUMMARY ${SHORT_DESCRIPTION})
+set(XML_DESCRIPTION ${LONG_DESCRIPTION})
 
 ##
 ## ----- Modify above to include all the plugin details --------- ##
@@ -93,7 +96,7 @@ set(XML_DESCRIPTION "Multiple Configurable alarms for  changing conditions for b
 ##
 
 SET(BUNDLE_DATA FALSE)  #from wd
-SET(CMAKE_MACOSX_RPATH "ON")  #from WD
+# SET(CMAKE_MACOSX_RPATH "ON")  #from WD  probably not needed
 option(PLUGIN_USE_SVG "Use SVG graphics" ON)  
 
 #OPTION(WATCHDOG_USE_SVG "Use SVG graphics" ON) #from WD
@@ -104,10 +107,8 @@ set(OpenGL_GL_PREFERENCE "LEGACY")
 
 # Don't use local version of GLU library
 set(USE_LOCAL_GLU FALSE)
-
-# Question still needed? on or off?
-# option(USE_GL "Enable OpenGL support" OFF)
-message(STATUS "USE_GL: ${USE_GL}")
+# option(USE_GL "Enable OpenGL support" OFF)  #recent add
+message(STATUS "${CMLOC}USE_GL: ${USE_GL}")
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
     set(CMAKE_BUILD_TYPE
@@ -122,6 +123,8 @@ message(STATUS "${CMLOC}Build type: ${CMAKE_BUILD_TYPE}")
 ##
 
 project(${PACKAGE})
+
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;")
 
 ## ----- The statement below is used to setup standard variables that are required by the CMAKE process - do not remove ----- ##
 #===========================================================
@@ -139,15 +142,12 @@ option(Plugin_CXX11 "Use c++11" OFF)
 ## ----- Modify section above if there are special requirements for the plugin ----- ##
 ## ----- do not change next section - needed to configure build process ----- ##
 ##
-
 #===========================================================
 include("PluginConfigure")
 #===========================================================
-
 ##
 ## ----- do not change section above - needed to configure build process ----- ##
 # ----- Change below to match project requirements for source, headers, etc. ----- ##
-#
 
 add_definitions(-DUSE_S57)
 
@@ -248,24 +248,22 @@ add_definitions(-DPLUGIN_USE_SVG)
 
 #INCLUDE_DIRECTORIES(BEFORE ${PROJECT_SOURCE_DIR}/src/libaudiofile)
 #INCLUDE_DIRECTORIES(BEFORE ${PROJECT_SOURCE_DIR}/src/plugingl)
-INCLUDE_DIRECTORIES(api-16)
+INCLUDE_DIRECTORIES(BEFORE ${PROJECT_SOURCE_DIR}/api-16)
+#include_directories(api-16)
 
 # ----- Change above to match project requirements ----- ##
 #--------REMOVE LN 194 to LN 296 from Testplugin_pi---------------
 #------- Change below to match project requirements --------------#
-
-#----INCLUDE CMAKE -----
 # INCLUDE("cmake/PluginNMEA.cmake")  #from WD
 # INCLUDE("cmake/PluginJSON.cmake")  #from WD
-#INCLUDE("cmake/PluginXML.cmake")  #WD not used
-#INCLUDE("cmake/PluginGL.cmake")  #WD not used
-#----INCLUDE CMAKE -----
+# INCLUDE("cmake/PluginXML.cmake")  #WD not used
+# INCLUDE("cmake/PluginGL.cmake")  #WD not used
 
+#----INCLUDE CMAKE -----
 #IF(UNIX)
 # INCLUDE("cmake/FindTinyXML.cmake")
 # FIND_PACKAGE(TinyXML QUIET)
 #ENDIF(UNIX)
-
 #IF(TINYXML_FOUND)
 # message (STATUS "Building with system tinyxml")
 # INCLUDE_DIRECTORIES(${TINYXML_INCLUDE_DIR})
@@ -284,7 +282,10 @@ if(UNIX)
     add_definitions("-fpic")
 endif(UNIX)
 
+##==============================================================================================
 ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRCS} ${HDRS} ${SRC_JSON} ${SRC_NMEA0183} ${SRC_LTINYXML})
+##==============================================================================================
+
 # ENDIF(TINYXML_FOUND)
 
 #Use only if libs are used instead of pluginXXXX.cmake files.
@@ -297,9 +298,6 @@ ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRCS} ${HDRS} ${SRC_JSON} ${SRC_NMEA0183} $
 
 
 add_definitions(-DTIXML_USE_STL)
-
-
-# +++++Section above is direct from Watchdog +++++++++++++##
 
 # Every plugin that uses JSON for passing messages should use a validator. The validator  allows the system to ignore non-conformant messages. 
 #if(UNIX AND NOT APPLE)
@@ -323,17 +321,23 @@ add_definitions(-DTIXML_USE_STL)
 #    endif(PI_JSON_SCHEMA_VALIDATOR)
 #endif(UNIX AND NOT APPLE)
 
-#These are NOT used in Testplugin, used for other plugins
-#INCLUDE("PluginGL")
-INCLUDE("PluginNMEA") #not for wxfax
-INCLUDE("PluginJSON")  #not for wxfax
-INCLUDE("PluginXML")
-
+## These are NOT used in Testplugin, used for other plugins
+##=======================================
+#include("PluginGL")
+include("PluginNMEA")
+include("PluginJSON")  
+include("PluginXML")
+##=======================================
+								   
 ##
 ## ----- Change above to match project requirements ----- ##
-# ----- Do not change - needed to build app ----- ##
-#
-#INCLUDE CMAKE #5,6 & 7 -----
-INCLUDE("PluginInstall")
-INCLUDE("PluginLocalization")
-INCLUDE("PluginPackage")
+## ----- do not change next section - needed to configure build process ----- ##
+##
+##=======================================
+include("PluginInstall")
+include("PluginLocalization")
+include("PluginPackage")
+##=======================================
+##
+## ----- do not change section above - needed to configure build process ----- ##
+##
