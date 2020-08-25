@@ -143,6 +143,8 @@ watchdog_pi::watchdog_pi(void *ppimgr)
 //
 //---------------------------------------------------------------------------------------------------------
 
+
+
 int watchdog_pi::Init(void)
 {
     AddLocaleCatalog( PLUGIN_CATALOG_NAME );
@@ -150,8 +152,8 @@ int watchdog_pi::Init(void)
     Alarm::LoadConfigAll();
 
 #ifdef WATCHDOG_USE_SVG
-    m_leftclick_tool_id = InsertPlugInToolSVG(  "Watchdog" , _svg_watchdog, _svg_watchdog,
-        _svg_watchdog, wxITEM_CHECK, _( "Watchdog" ),  "" , NULL, WATCHDOG_TOOL_POSITION, 0, this);
+    m_leftclick_tool_id = InsertPlugInToolSVG(  "Watchdog" , _svg_watchdog, _svg_watchdog_rollover,
+        _svg_watchdog_toggled, wxITEM_CHECK, _( "Watchdog" ),  "" , NULL, WATCHDOG_TOOL_POSITION, 0, this);
 #else
     m_leftclick_tool_id  = InsertPlugInTool
         ("", _img_watchdog, _img_watchdog, wxITEM_NORMAL,
@@ -232,20 +234,16 @@ int watchdog_pi::GetPlugInVersionMinor()
     return PLUGIN_VERSION_MINOR;
 }
 
-//int watchdog_pi::GetPlugInVersionPatch()
-//{
-//    return PLUGIN_VERSION_PATCH;
-//}
+int watchdog_pi::GetPlugInVersionMajor()
+{
+      return PLUGIN_VERSION_MAJOR;
+}
 
-//const char* watchdog_pi::GetPlugInVersionPre()
-//{
-//    return "";
-//}
+int watchdog_pi::GetPlugInVersionMinor()
+{
+      return PLUGIN_VERSION_MINOR;
+}
 
-//const char* watchdog_pi::GetPlugInVersionBuild()
-//{
-//    return "";
-//}
 
 wxBitmap *watchdog_pi::GetPlugInBitmap()
 {

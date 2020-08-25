@@ -55,7 +55,7 @@ set(LONG_DESCRIPTION "Multiple Configurable alarms for  changing conditions for 
 set(VERSION_MAJOR "2")
 set(VERSION_MINOR "4")
 set(VERSION_PATCH "19")
-set(VERSION_TWEAK "7")
+set(VERSION_TWEAK "9")
 set(VERSION_DATE "08-25-2020")
 set(OCPN_MIN_VERSION "ov50")
 set(OCPN_API_VERSION_MAJOR "1")
@@ -95,11 +95,11 @@ set(XML_DESCRIPTION ${LONG_DESCRIPTION})
 ## ----- Modify below for plugin special requirements------------ ##
 ##
 
-SET(BUNDLE_DATA FALSE)  #from wd
+set(BUNDLE_DATA FALSE)  #from wd
 # SET(CMAKE_MACOSX_RPATH "ON")  #from WD  probably not needed
+
 option(PLUGIN_USE_SVG "Use SVG graphics" ON)  
 
-#OPTION(WATCHDOG_USE_SVG "Use SVG graphics" ON) #from WD
 SET(CMAKE_CXX_STANDARD 11)  #also from WD
 
 # Prefer libGL.so to libOpenGL.so, see CMP0072
