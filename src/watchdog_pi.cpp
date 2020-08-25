@@ -226,16 +226,6 @@ int watchdog_pi::GetAPIVersionMinor()
 
 int watchdog_pi::GetPlugInVersionMajor()
 {
-    return PLUGIN_VERSION_MAJOR;
-}
-
-int watchdog_pi::GetPlugInVersionMinor()
-{
-    return PLUGIN_VERSION_MINOR;
-}
-
-int watchdog_pi::GetPlugInVersionMajor()
-{
       return PLUGIN_VERSION_MAJOR;
 }
 
