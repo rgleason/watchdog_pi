@@ -28,8 +28,8 @@
 #include "wx/wxprec.h"
 
 #ifndef  WX_PRECOMP
-#include "wx/wx.h"
-#endif
+  #include "wx/wx.h"
+#endif //precompiled headers
 
 #ifdef __MSVC__
 #include <windows.h>

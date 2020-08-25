@@ -55,8 +55,8 @@ set(LONG_DESCRIPTION "Multiple Configurable alarms for  changing conditions for 
 set(VERSION_MAJOR "2")
 set(VERSION_MINOR "4")
 set(VERSION_PATCH "19")
-set(VERSION_TWEAK "1")
-set(VERSION_DATE "08-22-2020")
+set(VERSION_TWEAK "4")
+set(VERSION_DATE "08-25-2020")
 set(OCPN_MIN_VERSION "ov50")
 set(OCPN_API_VERSION_MAJOR "1")
 set(OCPN_API_VERSION_MINOR "16")
@@ -106,8 +106,8 @@ SET(CMAKE_CXX_STANDARD 11)  #also from WD
 set(OpenGL_GL_PREFERENCE "LEGACY")
 
 # Don't use local version of GLU library
-set(USE_LOCAL_GLU FALSE)
-# option(USE_GL "Enable OpenGL support" OFF)  #recent add
+set(USE_LOCAL_GLU FALSE)  
+option(USE_GL "Enable OpenGL support" ON)  #If off result GL undefined identifiers
 message(STATUS "${CMLOC}USE_GL: ${USE_GL}")
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
