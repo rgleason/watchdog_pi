@@ -14,7 +14,7 @@ extern void initialize_images(void);
 
 extern wxBitmap *_img_watchdog;
 
-#ifdef WATCHDOG_USE_SVG
+#ifdef PLLUGIN_USE_SVG
 extern wxString _svg_watchdog;
 extern wxString _svg_watchdog_rollover;
 extern wxString _svg_watchdog_toggled;
