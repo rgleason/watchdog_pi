@@ -151,7 +151,17 @@ int watchdog_pi::Init(void)
 
     Alarm::LoadConfigAll();
 
-#ifdef WATCHDOG_USE_SVG
+//#ifdef PLUGIN_USE_SVG
+//    m_testplugin_button_id  = InsertPlugInToolSVG(_("Test Plugin"), m_ptpicons->m_s_testplugin_grey_pi, m_ptpicons->m_s_testplugin_pi, m_ptpicons->m_s_testplugin_toggled_pi, wxITEM_CHECK,
+//                                                  _("Test Plugin"), wxS(""), NULL, testplugin_POSITION, 0, this);
+//#else
+//    m_testplugin_button_id  = InsertPlugInTool(_("Test Plugin"), &m_ptpicons->m_bm_testplugin_grey_pi, &m_ptpicons->m_bm_testplugin_pi, wxITEM_CHECK,
+//                                             _("Test Plugin"), wxS(""), NULL, testplugin_POSITION, 0, this);
+//#endif
+
+
+
+#ifdef PLUGIN_USE_SVG
     m_leftclick_tool_id = InsertPlugInToolSVG(  "Watchdog" , _svg_watchdog, _svg_watchdog_rollover,
         _svg_watchdog_toggled, wxITEM_CHECK, _( "Watchdog" ),  "" , NULL, WATCHDOG_TOOL_POSITION, 0, this);
 #else

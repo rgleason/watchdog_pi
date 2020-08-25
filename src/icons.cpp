@@ -2,13 +2,20 @@
 #ifndef WX_PRECOMP
 #	include <wx/wx.h>
 #endif
+
+#include "icons.h"
+#include "ocpn_plugin.h"
+#include "watchdog_pi.h"
+
 #include <wx/mstream.h>
 #include <wx/filename.h>
-#include "icons.h"
+
+#include <wx/stdpaths.h>
+
 
 wxBitmap *_img_watchdog;
 
-#ifdef WATCHDOG_USE_SVG
+#ifdef PLUGIN_USE_SVG
 #include "ocpn_plugin.h"
 wxString _svg_watchdog;
 wxString _svg_watchdog_rollover;
