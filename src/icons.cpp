@@ -22,7 +22,7 @@ void initialize_images(void)
 		_img_watchdog = new wxBitmap(wxImage(sm));
 	}
 
-#ifdef WATCHDOG_USE_SVG
+#ifdef PLUGIN_USE_SVG
 //    wxFileName fn;
 //   fn.SetPath(*GetpSharedDataLocation());
 //    fn.AppendDir(_T("plugins"));
