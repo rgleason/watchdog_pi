@@ -37,8 +37,7 @@
 
 set(CMLOC "CMakeLists: ")
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-#try adding this in lieu of the see -fPIC
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)   
+
 
 # define minimum cmake version
 cmake_minimum_required(VERSION 3.1.1)
@@ -242,6 +241,13 @@ INCLUDE_DIRECTORIES(api-16)
 # ----- Change above to match project requirements ----- ##
 #--------REMOVE LN 194 to LN 296 from Testplugin_pi---------------
 #------- Change below to match project requirements --------------#
+
+if(UNIX)
+#    add_definitions("-fpic")
+# Try adding this in lieu of the see -fPIC
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)   
+endif(UNIX)
+
 
 ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRCS} ${HDRS} ${SRC_JSON} ${SRC_NMEA0183} )
 
