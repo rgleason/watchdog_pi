@@ -219,8 +219,8 @@ endif(PI_JSON_SCHEMA_VALIDATOR)
 ##=============================================================
 # include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpninclude)
 # include_directories(BEFORE ${PROJECT_SOURCE_DIR}/extinclude)
-# include_directories(BEFORE ${PROJECT_SOURCE_DIR}/libs/)
-# include_directories(BEFORE ${PROJECT_SOURCE_DIR}/libs/wx/include)
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/libs/)
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/libs/wx/include)
 # include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpninclude/wxcurl)
 # include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpninclude/wxcurl/include)
 # include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpnsrc/lz4)
@@ -243,7 +243,7 @@ INCLUDE_DIRECTORIES(api-16)
 #------- Change below to match project requirements --------------#
 
 if(UNIX)
-#    add_definitions("-fpic")
+# add_definitions("-fpic")
 # Try adding this in lieu of the see -fPIC
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)   
 endif(UNIX)
