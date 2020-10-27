@@ -37,6 +37,8 @@
 
 set(CMLOC "CMakeLists: ")
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+#try adding this in lieu of the see -fPIC
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)   
 
 # define minimum cmake version
 cmake_minimum_required(VERSION 3.1.1)
@@ -235,7 +237,6 @@ endif(PI_JSON_SCHEMA_VALIDATOR)
 #INCLUDE_DIRECTORIES(BEFORE ${PROJECT_SOURCE_DIR}/src/libaudiofile)
 #INCLUDE_DIRECTORIES(BEFORE ${PROJECT_SOURCE_DIR}/src/plugingl)
 INCLUDE_DIRECTORIES(api-16)
-
 
 
 # ----- Change above to match project requirements ----- ##
