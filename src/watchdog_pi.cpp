@@ -26,6 +26,7 @@
 
 #include <wx/wx.h>
 #include <wx/stdpaths.h>
+#include <GL/gl.h>
 
 #include "json/json.h"
 

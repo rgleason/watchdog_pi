@@ -55,10 +55,10 @@ SET(SRC_NMEA0183
     src/xdr.cpp
 )
 
-if (NOT wxWidgets_INCLUDE_DIRS)
-    include(SimpleWxConfig)
-    SimpleWxConfig()
-endif ()
+#if (NOT wxWidgets_INCLUDE_DIRS)
+#    include(SimpleWxConfig)
+#    SimpleWxConfig()
+#endif ()
 
 add_library(NMEA0183 STATIC ${SRC_NMEA0183})
 add_library(ocpn::nmea0183 ALIAS NMEA0183)

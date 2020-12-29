@@ -62,7 +62,7 @@ set(LONG_DESCRIPTION  "Multiple Configurable alarms for  changing conditions for
 set(VERSION_MAJOR "2")
 set(VERSION_MINOR "4")
 set(VERSION_PATCH "18")
-set(VERSION_TWEAK "4")
+set(VERSION_TWEAK "5")
 set(VERSION_DATE "12/28/2020")
 set(OCPN_MIN_VERSION "ov50")
 set(OCPN_API_VERSION_MAJOR "1")
@@ -113,8 +113,7 @@ set(OpenGL_GL_PREFERENCE "LEGACY")
 # Don't use local version of GLU library
 set(USE_LOCAL_GLU FALSE)
 
-#option(USE_GL "Enable OpenGL support" ON)  3Was commented 
-# Question still needed? on or off?
+option(USE_GL "Enable OpenGL support" ON)   
 message(STATUS "${CMLOC}USE_GL: ${USE_GL}")
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
