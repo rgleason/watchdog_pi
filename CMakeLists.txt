@@ -22,9 +22,8 @@
 ## *   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx                                       *
 ## ***
 #-----------------------------------------------------------------------------
-# Frontend2 Author: Jon Gough  
-# Frontend2: v1.0.124
-# ---------------------------------------------------------------------------
+# Frontend2: v1.0.146.4     Frontend2 Author: Jon Gough  
+#---------------------------------------------------------------------------
 
 ## ----- When changing this file do NOT change the order in which sections occur        ----- ##
 ## ----- Changes should only be made between the section blocks that identify where     ----- ##
@@ -53,81 +52,87 @@ endif(COMMAND cmake_policy)
 
 # define plugin name, owner and versions
 SET(VERBOSE_NAME "Watchdog")
-set(COMMON_NAME "Watchdog")  # Search "getcommonname"in watchdog_pi.cpp
+set(COMMON_NAME "Watchdog")
 set(TITLE_NAME "Watchdog")
 set(PACKAGE_CONTACT "Sean d'Epagnier")
 SET(PACKAGE "watchdog_pi")
+set(SHORT_DESCRIPTION  "Implement watchdog ability for opencpn")
+set(LONG_DESCRIPTION  "Multiple Configurable alarms for  changing conditions for boundaries, cog, landfall, ais, wind, nmea, weather, pypilot, wind, deadman, etc.")
 
 set(VERSION_MAJOR "2")
 set(VERSION_MINOR "4")
-set(VERSION_PATCH "17")
+set(VERSION_PATCH "18")
 set(VERSION_TWEAK "4")
-set(VERSION_DATE "8/213/2020")
+set(VERSION_DATE "12/28/2020")
 set(OCPN_MIN_VERSION "ov50")
 set(OCPN_API_VERSION_MAJOR "1")
 set(OCPN_API_VERSION_MINOR "16")
 
 set(PARENT "opencpn")
 
-#Used to set up a local webserver with git loaded, for testing purposes.
-set(GIT_REPOSITORY_SERVER "github.com")
+# The next line allows for setting up your own local webserver with git on it for testing purposes, the default is github.com
+# This line is turned on in pluginconfigure.cmake because the flatpak build and building locally depends on it.
+# set(GIT_REPOSITORY_SERVER "github.com")
 
 #No longer needed, queried.
 #set(GIT_USER "rgleason")
 #set(GIT_REPOSITORY_NAME "watchdog_pi")
-# Set Cloudsmith upload repository suffix for each catalog
+
+# Specifies Cloudsmith Upload repository suffix
 set(PROD "prod")   #Standard Repos
 set(BETA "beta")   #Standard Repos
 set(ALPHA "alpha") #Standard Repos
 
-# set(CLOUDSMITH_USER "sean-depagnier")
-# set(CLOUDSMITH_USER "rick-gleason")
-set(CLOUDSMITH_USER "opencpn")
-
-# Set if  Cloudsmith Base Repository name does not match your Git Repository name.
-# set(CLOUDSMITH_BASE_REPOSITORY "${GIT_REPOSITORY_NAME}")
-# set(CLOUDSMITH_BASE_REPOSITORY "opencpn-plugins") #Rick's customization
+# Set if Cloudsmith Base Repository name does not match your Git Repository name.
+#set(CLOUDSMITH_BASE_REPOSITORY "${GIT_REPOSITORY_NAME}")
 set(CLOUDSMITH_BASE_REPOSITORY "watchdog")  #without the pi
+
+# Set the following to use OpenCPN cloudsmith repositories instead of own repositories
+set(CLOUDSMITH_USER "opencpn")
+#set(CLOUDSMITH_USER "rick-gleason")
 
 # Set Plugin info-url, summary and description
 set(XML_INFO_URL "https://opencpn.org/OpenCPN/plugins/watchdog.html")
-set(XML_SUMMARY "Implement watchdog ability for opencpn")
-set(XML_DESCRIPTION "Multiple Configurable alarms for  changing conditions for boundaries, cog, landfall, ais, wind, nmea, weather, pypilot, wind, deadman, etc.")
+set(XML_SUMMARY Y ${SHORT_DESCRIPTION})
+set(XML_DESCRIPTION  ${LONG_DESCRIPTION})
 
 ##
-## ----- Modify above to include all the plugin details --------- ##
-## ----- Modify below for plugin special requirements------------ ##
+## ----- Modify section above to include all the details for your plugin ----- ##
+## ----- Modify section below if there are special requirements for the plugin ----- ##
 ##
 
-set(BUNDLE_DATA FALSE)  #from wd
-set(CMAKE_MACOSX_RPATH "ON")  #from WD
+#  set(BUNDLE_DATA FALSE)  #from wd
+#  set(CMAKE_MACOSX_RPATH "ON")  #from WD
 option(PLUGIN_USE_SVG "Use SVG graphics" ON)  
+
 set(CMAKE_CXX_STANDARD 11)
+
 # Prefer libGL.so to libOpenGL.so, see CMP0072
 set(OpenGL_GL_PREFERENCE "LEGACY")
+
 # Don't use local version of GLU library
 set(USE_LOCAL_GLU FALSE)
+
+#option(USE_GL "Enable OpenGL support" ON)  3Was commented 
 # Question still needed? on or off?
-#option(USE_GL "Enable OpenGL support" OFF)
 message(STATUS "${CMLOC}USE_GL: ${USE_GL}")
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
-    set(CMAKE_BUILD_TYPE
-        "Release"
-        CACHE STRING "Choose the type of build" FORCE)
+    set(CMAKE_BUILD_TYPE "Release"
+    CACHE STRING "Choose the type of build" FORCE)
 endif("${CMAKE_BUILD_TYPE}" STREQUAL "")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "" "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
 message(STATUS "${CMLOC}Build type: ${CMAKE_BUILD_TYPE}")
 
-#
+##
 ## ----- The statements below are used to setup standard variables that are required by the CMAKE process - do not remove ----- ##
 ##
 
 project(${PACKAGE})
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake;")
 
-## ----- The statement below is used to setup standard variables that are required by the CMAKE process - do not remove ----- ##
 #===========================================================
-INCLUDE("cmake/PluginSetup.cmake")
+INCLUDE("PluginSetup")
 #===========================================================
 ## ----- The above is used to setup standard variables that are required by the CMAKE process - do not remove ----- ##
 ## ----- Modify section below if there are special requirements for the plugin ----- ##
@@ -140,10 +145,10 @@ option(Plugin_CXX11 "Use c++11" OFF)
 ## ----- Modify section above if there are special requirements for the plugin ----- ##
 ## ----- do not change next section - needed to configure build process ----- ##
 #===========================================================
-INCLUDE("cmake/PluginConfigure.cmake")
+INCLUDE("PluginConfigure")
 #===========================================================
 ## ----- do not change section above - needed to configure build process ----- ##
-# ----- Change below to match project requirements for source, headers, etc. ----- ##
+## ----- Change below to match project requirements for source, headers, etc. ----- ##
 
 add_definitions(-DUSE_S57)
 
@@ -191,8 +196,7 @@ SET(HDRS
 			src/wxWTranslateCatalog.h
 
             api-16/ocpn_plugin.h
- )
-
+)
 
 add_definitions(-DPLUGIN_USE_SVG)
 
@@ -217,6 +221,7 @@ endif(PI_JSON_SCHEMA_VALIDATOR)
 ##=============================================================
 # Modify/configure 'Include' Directories below for the Plugin
 ##=============================================================
+
 # include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpninclude)
 # include_directories(BEFORE ${PROJECT_SOURCE_DIR}/extinclude)
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/libs/)
@@ -237,17 +242,14 @@ include_directories(BEFORE ${PROJECT_SOURCE_DIR}/libs/wx/include)
 #INCLUDE_DIRECTORIES(BEFORE ${PROJECT_SOURCE_DIR}/src/plugingl)
 INCLUDE_DIRECTORIES(api-16)
 
-
 # ----- Change above to match project requirements ----- ##
 #--------REMOVE LN 194 to LN 296 from Testplugin_pi---------------
 #------- Change below to match project requirements --------------#
 
 if(UNIX)
-# add_definitions("-fpic")
-# Try adding this in lieu of the see -fPIC
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)   
+  # Add this in lieu of add_definitions ("-fPIC")
+   set(CMAKE_POSITION_INDEPENDENT_CODE ON)   
 endif(UNIX)
-
 
 ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRCS} ${HDRS} ${SRC_JSON} ${SRC_NMEA0183} )
 
@@ -259,7 +261,6 @@ target_link_libraries(${PACKAGE_NAME} ocpn::bzip2)
 
 add_subdirectory(libs/nmea0183)
 target_link_libraries(${PACKAGE_NAME} ocpn::nmea0183)
-
 
 # +++++Section above is direct from Watchdog +++++++++++++##
 # Was commented out
@@ -287,18 +288,21 @@ if(UNIX AND NOT APPLE)
     endif(PI_JSON_SCHEMA_VALIDATOR)
 endif(UNIX AND NOT APPLE)
 
-##================================================================================
 ## ----- Change above to match project requirements ----- ##
+
+##================================================================================
 #These are NOT used in Testplugin, used for other plugins
-#INCLUDE("cmake/PluginGL.cmake")
-#INCLUDE("cmake/PluginNMEA.cmake") #not for wxfax
-INCLUDE("cmake/PluginJSON.cmake")  #not for wxfax
+#INCLUDE("PluginGL")
+#INCLUDE("PluginNMEA") #not for wxfax
+INCLUDE("PluginJSON")  #not for wxfax
+#========================================================	
 
 ##
 ## ----- Change above to match project requirements ----- ##
-##
 ## ----- Do not change - needed to build app ----- ##
-#INCLUDE CMAKE #5,6 & 7 -----
-INCLUDE("cmake/PluginInstall.cmake")
-INCLUDE("cmake/PluginLocalization.cmake")
-INCLUDE("cmake/PluginPackage.cmake")
+##
+#========================================================
+INCLUDE("PluginInstall")
+INCLUDE("PluginLocalization")
+INCLUDE("PluginPackage")
+#========================================================
