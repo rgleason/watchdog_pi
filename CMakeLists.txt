@@ -22,21 +22,20 @@
 ## *   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx                                       *
 ## ***
 #-----------------------------------------------------------------------------
-# Frontend2: v1.0.146.4     Frontend2 Author: Jon Gough  
+# Frontend2: v1.0.155.0  9.02/2021  Frontend2 Author: Jon Gough  
 #---------------------------------------------------------------------------
 
 ## ----- When changing this file do NOT change the order in which sections occur        ----- ##
 ## ----- Changes should only be made between the section blocks that identify where     ----- ##
 ## ----- these changes should be. The whole configuration process relies on this        ----- ##
 ## ----- sequence to be successful                                                      ----- ##
+##
 
 ##
-##----- Modify section below to include all the details for your plugin ----- ##
+## ----- Modify section below to include all the details for your plugin ----- ##
 ##
 
 set(CMLOC "CMakeLists: ")
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
 
 # define minimum cmake version
 cmake_minimum_required(VERSION 3.1.1)
@@ -61,9 +60,9 @@ set(LONG_DESCRIPTION  "Multiple Configurable alarms for  changing conditions for
 
 set(VERSION_MAJOR "2")
 set(VERSION_MINOR "4")
-set(VERSION_PATCH "22")
-set(VERSION_TWEAK "6")
-set(VERSION_DATE "12/28/2020")
+set(VERSION_PATCH "23")
+set(VERSION_TWEAK "0")
+set(VERSION_DATE "2/14/2020")
 set(OCPN_MIN_VERSION "ov50")
 set(OCPN_API_VERSION_MAJOR "1")
 set(OCPN_API_VERSION_MINOR "16")
@@ -71,12 +70,8 @@ set(OCPN_API_VERSION_MINOR "16")
 set(PARENT "opencpn")
 
 # The next line allows for setting up your own local webserver with git on it for testing purposes, the default is github.com
+#set(GIT_REPOSITORY_SERVER "github.com")
 # This line is turned on in pluginconfigure.cmake because the flatpak build and building locally depends on it.
-# set(GIT_REPOSITORY_SERVER "github.com")
-
-#No longer needed, queried.
-#set(GIT_USER "rgleason")
-#set(GIT_REPOSITORY_NAME "watchdog_pi")
 
 # Specifies Cloudsmith Upload repository suffix
 set(PROD "prod")   #Standard Repos
@@ -93,7 +88,7 @@ set(CLOUDSMITH_USER "opencpn")
 
 # Set Plugin info-url, summary and description
 set(XML_INFO_URL "https://opencpn.org/OpenCPN/plugins/watchdog.html")
-set(XML_SUMMARY Y ${SHORT_DESCRIPTION})
+set(XML_SUMMARY ${SHORT_DESCRIPTION})
 set(XML_DESCRIPTION  ${LONG_DESCRIPTION})
 
 ##
@@ -101,24 +96,22 @@ set(XML_DESCRIPTION  ${LONG_DESCRIPTION})
 ## ----- Modify section below if there are special requirements for the plugin ----- ##
 ##
 
-#  set(BUNDLE_DATA FALSE)  #from wd
-#  set(CMAKE_MACOSX_RPATH "ON")  #from WD
-option(PLUGIN_USE_SVG "Use SVG graphics" ON)  
+option(PLUGIN_USE_SVG "Use SVG graphics" ON)
 
 set(CMAKE_CXX_STANDARD 11)
 
+# Use local version of GLU library
+set(USE_LOCAL_GLU TRUE)
 # Prefer libGL.so to libOpenGL.so, see CMP0072
 set(OpenGL_GL_PREFERENCE "LEGACY")
-
 # Don't use local version of GLU library
-set(USE_LOCAL_GLU FALSE)
+#set(USE_LOCAL_GLU FALSE)
 
-option(USE_GL "Enable OpenGL support" ON)   
+option(USE_GL "Enable OpenGL support" ON)
 message(STATUS "${CMLOC}USE_GL: ${USE_GL}")
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
-    set(CMAKE_BUILD_TYPE "Release"
-    CACHE STRING "Choose the type of build" FORCE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build" FORCE)
 endif("${CMAKE_BUILD_TYPE}" STREQUAL "")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "" "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
 message(STATUS "${CMLOC}Build type: ${CMAKE_BUILD_TYPE}")
@@ -137,7 +130,7 @@ INCLUDE("PluginSetup")
 ## ----- Modify section below if there are special requirements for the plugin ----- ##
 ##
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE "Activate verbose mode for make files" ON)
 
 option(Plugin_CXX11 "Use c++11" OFF)
 
@@ -171,7 +164,7 @@ SET(SRCS
             src/icons.cpp
             src/ODAPI.h
             src/wddc.cpp
-            src/TexFont.cpp
+#            src/TexFont.cpp
 	)
 	
 SET(HDRS
@@ -193,9 +186,29 @@ SET(HDRS
 			src/WeatherPanel.h
 			src/WindPanel.h
 			src/wxWTranslateCatalog.h
+	)
 
-            api-16/ocpn_plugin.h
-)
+set(OCPNSRC ocpnsrc/TexFont.cpp)
+
+set(OCPNHDRS ocpninclude/ocpn_plugin.h ocpninclude/pluginmanager.h ocpninclude/TexFont.h)
+
+set(EXTSRC)
+
+set(EXTINCLUDE ${EXTINCLUDE} extinclude)
+set(EXTINCLUDE ${EXTINCLUDE} extinclude/ODAPI.h)
+
+set(LIBSSRC libs/wxJSON/src/jsonreader.cpp libs/wxJSON/src/jsonval.cpp libs/wxJSON/src/jsonwriter.cpp)
+
+set(LIBHDRS
+    libs/GL/gl.h
+    libs/GL/gl_private.h
+    libs/GL/glext.h
+    libs/GL/glu.h
+    libs/wx/include/json_defs.h
+    libs/wx/include/jsonreader.h
+    libs/wx/include/jsonval.h
+    libs/wx/include/jsonwriter.h)
+
 
 add_definitions(-DPLUGIN_USE_SVG)
 
@@ -221,14 +234,17 @@ endif(PI_JSON_SCHEMA_VALIDATOR)
 # Modify/configure 'Include' Directories below for the Plugin
 ##=============================================================
 
-# include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpninclude)
-# include_directories(BEFORE ${PROJECT_SOURCE_DIR}/extinclude)
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/include)
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpninclude)
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpnsrc/glu/include)
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/${EXTINCLUDE})
+
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/libs/)
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/libs/wx/include)
-# include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpninclude/wxcurl)
-# include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpninclude/wxcurl/include)
-# include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpnsrc/lz4)
-# include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpnsrc/bitmaps)
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpninclude/wxcurl)
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpninclude/wxcurl/include)
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpnsrc/lz4)
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpnsrc/bitmaps)
 
 ##================================================================================
 ## Required to collect all the set( headers and SRCS  - Adjust as required
@@ -250,7 +266,10 @@ if(UNIX)
    set(CMAKE_POSITION_INDEPENDENT_CODE ON)   
 endif(UNIX)
 
-ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRCS} ${HDRS} ${SRC_JSON} ${SRC_NMEA0183} )
+#ADD_LIBRARY(${PACKAGE_NAME} SHARED ${SRCS} ${HDRS}  ${SRC_NMEA0183} )
+add_library(${PACKAGE_NAME} SHARED ${SRCS} ${HDRS} ${OCPNSRC} ${EXTSRC} ${LIBSSRC} ${SRC_JSON} ${SRC_NMEA0183} )
+
+add_definitions(-DTIXML_USE_STL)
 
 add_subdirectory(libs/tinyxml)
 target_link_libraries(${PACKAGE_NAME} ocpn::tinyxml)
@@ -266,7 +285,7 @@ target_link_libraries(${PACKAGE_NAME} ocpn::nmea0183)
 
 #JSON Validator: Every plugin that uses JSON for passing messages should use a validator.  A JSON validator is much like an XML validator, the validator allows the system to ignore non-conformant messages.  The JSON validator changes the OSABI flavor of the Linux executable so there is code to change it back.
 
-if(UNIX AND NOT APPLE)
+if(UNIX AND NOT APPLE AND NOT QT_ANDROID)
     if(PI_JSON_SCHEMA_VALIDATOR)
         # Change OS/ABI to be UNIX - System V to make it run with OCPN
         set(lib_name lib${PACKAGE_NAME}.so)
@@ -285,7 +304,7 @@ if(UNIX AND NOT APPLE)
             message(STATUS "${CMLOC}Cannot correct OS/ABI to match OCPN if it is generated incorrectly. Package binutils needed")
         endif(NOT (${elfedit} STREQUAL "elfedit-NOTFOUND"))
     endif(PI_JSON_SCHEMA_VALIDATOR)
-endif(UNIX AND NOT APPLE)
+endif(UNIX AND NOT APPLE AND NOT QT_ANDROID)
 
 ## ----- Change above to match project requirements ----- ##
 
@@ -305,3 +324,10 @@ INCLUDE("PluginInstall")
 INCLUDE("PluginLocalization")
 INCLUDE("PluginPackage")
 #========================================================
+## ----- do not change section above - needed to configure build process ----- ##
+
+message(STATUS "${CMLOC}include directories: ")
+get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+foreach(dir ${dirs})
+    message(STATUS "${CMLOC}dir='${dir}'")
+endforeach()
