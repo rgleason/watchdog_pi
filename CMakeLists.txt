@@ -61,8 +61,8 @@ set(LONG_DESCRIPTION  "Multiple Configurable alarms for  changing conditions for
 set(VERSION_MAJOR "2")
 set(VERSION_MINOR "4")
 set(VERSION_PATCH "23")
-set(VERSION_TWEAK "0")
-set(VERSION_DATE "2/14/2020")
+set(VERSION_TWEAK "1")
+set(VERSION_DATE "2/15/2020")
 set(OCPN_MIN_VERSION "ov50")
 set(OCPN_API_VERSION_MAJOR "1")
 set(OCPN_API_VERSION_MINOR "16")
@@ -234,17 +234,21 @@ endif(PI_JSON_SCHEMA_VALIDATOR)
 # Modify/configure 'Include' Directories below for the Plugin
 ##=============================================================
 
-include_directories(BEFORE ${PROJECT_SOURCE_DIR}/include)
+#include_directories(BEFORE ${PROJECT_SOURCE_DIR}/extsrc/mygdal)
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpninclude)
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpnsrc/glu/include)
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/${EXTINCLUDE})
-
-include_directories(BEFORE ${PROJECT_SOURCE_DIR}/libs/)
-include_directories(BEFORE ${PROJECT_SOURCE_DIR}/libs/wx/include)
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpninclude/wxcurl)
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpninclude/wxcurl/include)
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpninclude/GL)
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpnsrc/lz4)
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/ocpnsrc/bitmaps)
+
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/include)
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/libs/)
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/libs/wx/include)
+
+
 
 ##================================================================================
 ## Required to collect all the set( headers and SRCS  - Adjust as required
