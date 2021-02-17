@@ -24,11 +24,16 @@ void initialize_images(void)
 
 #ifdef WATCHDOG_USE_SVG
     wxFileName fn;
-    fn.SetPath(*GetpSharedDataLocation());
-    fn.AppendDir(_T("plugins"));
-    fn.AppendDir(_T("watchdog_pi"));
-    fn.AppendDir(_T("data"));
-    fn.SetFullName(_T("watchdog_pi.svg"));
+	   wxString tmp_path;
+	   tmp_path = GetPluginDataDir("watchdog_pi");
+	   fn.SetPath(tmp_path);
+	   fn.AppendDir(_T("data"));
+	   fn.SetFullName(_T("watchdog_pi.svg"));
+//    fn.SetPath(*GetpSharedDataLocation());
+//   fn.AppendDir(_T("plugins"));
+//    fn.AppendDir(_T("watchdog_pi"));
+//    fn.AppendDir(_T("data"));
+//    fn.SetFullName(_T("watchdog_pi.svg"));
     _svg_watchdog = fn.GetFullPath();
 #endif
 
