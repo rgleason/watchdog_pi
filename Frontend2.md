@@ -1,4 +1,4 @@
-# FRONTEND 2  v1.0.146.4
+##### FRONTEND 2  v1.0.146.4
 
 GOAL: Assist plugin developers to convert their plugins to the Plugin Manager system which:
 1. Uses tarballs and metadata.xml files to store the necessary files and provide information.
@@ -146,10 +146,10 @@ Example:
 1. git commit -am "v1.9.5.10"
 1. git tag v1.9.5.10
 1. git push origin refs/tags/v1.9.5.10
-  - Enumerating objects: 5, done.
-  - remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
-  - To https://github.com/xxxx/weatherfax_pi.git  
-  - * [new tag]           v1.9.5.10 -> v1.9.5.10
+  -  Enumerating objects: 5, done.
+  -  remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+  -  To https://github.com/xxxx/weatherfax_pi.git  
+  -  * [new tag]           v1.9.5.10 -> v1.9.5.10
 1. git push origin master 
 
 For information about building locally for local deployment refer to Read-Build.md

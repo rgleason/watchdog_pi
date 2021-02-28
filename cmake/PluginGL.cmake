@@ -16,16 +16,18 @@ message(STATUS "Processing PluginGL.cmake")
 
 # changed for watchdog
 SET(SRC_PLUGINGL
-          src/GL/gl.h  
-          src/GL/glext.h
+          libs/GL/gl.h  
+          libs/GL/glext.h
  )
 
+#needed to build Ubuntu!
 if(UNIX)
-    add_definitions("-fpic")
+  # Add this in lieu of add_definitions ("-fPIC")
+   set(CMAKE_POSITION_INDEPENDENT_CODE ON)   
 endif(UNIX)
 
 message(STATUS "PROJECT_SOURCE_DIR: ${PROJECT_SOURCE_DIR}")
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/src/GL)   #added for Watchdog
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/libs/GL)   #added for Watchdog
 
 ADD_LIBRARY(${PACKAGE_NAME}_LIB_PLUGINGL STATIC ${SRC_PLUGINGL})
 TARGET_LINK_LIBRARIES( ${PACKAGE_NAME} ${PACKAGE_NAME}_LIB_PLUGINGL )
