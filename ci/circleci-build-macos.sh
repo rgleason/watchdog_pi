@@ -4,9 +4,10 @@
 # Build the  MacOS artifacts
 #
 
+# Print the shell commeand  before executing it, and exit if not 0 without checking.
 set -xe
-
 set -o pipefail
+
 # Check if the cache is with us. If not, re-install brew.
 brew list --versions libexif || brew update-reset
 
@@ -16,25 +17,62 @@ for pkg in cairo cmake gettext libarchive libexif python wget; do
 done
 
 if [ -n "$WXVERSION" ] && [ "$WXVERSION" -eq "315" ]; then
-    curl -o wx315_opencpn50_macos1010.tar.xz https://download.opencpn.org/s/MCiRiq4fJcKD56r/download
-    tar xJf wx315_opencpn50_macos1010.tar.xz -C /tmp
+    echo "Building for WXVERSION 315";
+    WX_URL=https://download.opencpn.org/s/MCiRiq4fJcKD56r/download
+    WX_DOWNLOAD=/tmp/wx315_opencpn50_macos1010.tar.xz
     WX_EXECUTABLE=/tmp/wx315_opencpn50_macos1010/bin/wx-config
     WX_CONFIG="--prefix=/tmp/wx315_opencpn50_macos1010"
 else
-    curl -o wx312B_opencpn50_macos109.tar.xz https://download.opencpn.org/s/rwoCNGzx6G34tbC/download
-    tar xJf wx312B_opencpn50_macos109.tar.xz -C /tmp
+    echo "Building for WXVERSION 312";
+    WX_URL=https://download.opencpn.org/s/rwoCNGzx6G34tbC/download
+    WX_DOWNLOAD=/tmp/wx312B_opencpn50_macos109.tar.xz
     WX_EXECUTABLE=/tmp/wx312B_opencpn50_macos109/bin/wx-config
     WX_CONFIG="--prefix=/tmp/wx312B_opencpn50_macos109"
 fi
 
-export PATH="/usr/local/opt/gettext/bin:$PATH"
-echo 'export PATH="/usr/local/opt/gettext/bin:$PATH"' >> ~/.bash_profile
+# Download required binaries using wget, since curl causes an issue with Xcode 13.1 and some specific certificates.
+# Inspect the response code to see if the file is downloaded properly.
+# If the download failed or file does not exist, then exit with an error.
+# For local purposes: only download if it has not been downloaded already. That does not harm building on CircleCI.
+if [ ! -f "$WX_DOWNLOAD" ]; then
+  echo "Downloading $WX_DOWNLOAD";
+  SERVER_RESPONSE=$(wget --server-response  -O $WX_DOWNLOAD $WX_URL 2>&1 | grep "HTTP"/ | awk '{print $2}')
+  if [ $SERVER_RESPONSE -ne 200 ]; then
+    echo "Fatal error: could not download $WX_DOWNLOAD. Server response: $SERVER_RESPONSE."
+    exit 0
+  fi
+fi
+if [ -f "$WX_DOWNLOAD" ]; then
+  echo "$WX_DOWNLOAD exists"
+else
+  echo "Fatal error: $WX_DOWNLOAD does not exist";
+  exit 0
+fi
 
+# Unpack the binaries to /tmp
+tar xJf $WX_DOWNLOAD -C /tmp
+
+# Extend PATH, only when necesary
+INCLUDE_DIR_GETTEXT="/usr/local/opt/gettext/bin:"
+
+if [[ ":$PATH:" != *$INCLUDE_DIR_GETTEXT* ]]; then
+  echo "Your path is missing $INCLUDE_DIR_GETTEXT. Trying to add it automatically:"
+  export PATH=$INCLUDE_DIR_GETTEXT$PATH
+  echo 'export PATH="'$INCLUDE_DIR_GETTEXT'$PATH"' >> ~/.bash_profile
+else
+    echo "Path includes $INCLUDE_DIR_GETTEXT"
+fi
+
+# According to @bdbcat Dave: https://opencpn.org/flyspray/index.php?do=editcomment&task_id=2726&id=7702
+# this should be 10.10
 export MACOSX_DEPLOYMENT_TARGET=10.9
 
 # use brew to get Packages.pkg
 if brew list --cask --versions packages; then
-    version=$(pkg_version packages '--cask')
+    # pkg_version is unavailable on osX; therefore use the result of brew list to get the version number
+    #    version=$(pkg_version packages '--cask')
+    version=$(brew list --cask --versions packages)
+    version="${version/"packages "/}"
     sudo installer \
         -pkg /usr/local/Caskroom/packages/$version/packages/Packages.pkg \
         -target /
@@ -42,6 +80,7 @@ else
     brew install --cask packages
 fi
 
+# Now create the make file, build and make the package ----------------
 rm -rf build && mkdir build && cd build
 cmake \
   -DwxWidgets_CONFIG_EXECUTABLE=$WX_EXECUTABLE \
@@ -52,4 +91,3 @@ cmake \
   ..
 make -sj2
 make package
-
