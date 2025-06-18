@@ -393,8 +393,8 @@ NewAlarmDialogBase::NewAlarmDialogBase( wxWindow* parent, wxWindowID id, const w
 	fgSizer40->SetFlexibleDirection( wxBOTH );
 	fgSizer40->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_ALL );
 
-	m_lAlarmType = new wxListCtrl( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_NO_HEADER|wxLC_REPORT|wxLC_SINGLE_SEL );
-    m_lAlarmType-SetFont(*dFont);
+	m_lAlarmType = new wxListCtrl( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT|wxLC_SINGLE_SEL );
+    m_lAlarmType->SetFont(*dFont);
 
 	fgSizer40->Add( m_lAlarmType, 0, wxALL|wxEXPAND, 5 );
 
@@ -827,10 +827,18 @@ CoursePanel::CoursePanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 	fgSizer38->SetFlexibleDirection( wxBOTH );
 	fgSizer38->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
 
-	m_rbGPSCourse = new wxRadioButton( this, wxID_ANY, _("GPS Course"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_rbGPSCourse = new wxRadioButton( this, wxID_ANY, _("Course Over Ground"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_rbGPSCourse->SetToolTip(_(
+		"Use Course Over Ground (COG) for course deviation calculation.\n"
+		"This represents the actual path the boat is traveling over the seafloor,\n"
+		"including effects of current and leeway."));
 	fgSizer38->Add( m_rbGPSCourse, 0, wxALL, 5 );
 
-	m_rbHeading = new wxRadioButton( this, wxID_ANY, _("Heading Sensor"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_rbHeading = new wxRadioButton( this, wxID_ANY, _("Heading"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_rbHeading->SetToolTip(_(
+		"Use compass/heading sensor (HDM) for course deviation calculation.\n"
+		"This represents the direction the boat is pointing,\n"
+		"regardless of actual track due to current or leeway."));
 	fgSizer38->Add( m_rbHeading, 0, wxALL, 5 );
 
 

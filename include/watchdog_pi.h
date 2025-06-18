@@ -133,7 +133,34 @@ public:
       PlugIn_Position_Fix_Ex &LastFix() { return m_lastfix; }
       double Declination();
 
-      double m_sog, m_cog, m_hdm;
+      /**
+       * Filtered speed over ground in knots.
+       *
+       * Exponentially weighted moving average of speed over ground calculated
+       * from position differences between timer cycles. Uses a 25%/75% weighting
+       * (25% new data, 75% historical) to provide smooth, stable speed readings
+       * that reduce GPS noise and sudden speed fluctuations.
+       */
+      double m_sog,
+
+      /**
+       * Filtered course over ground in degrees (0-359.9°)
+       *
+       * Exponentially weighted moving average of course over ground calculated
+       * from bearing between consecutive position fixes. Uses a 25%/75% weighting
+       * with proper circular averaging to handle heading discontinuities at 0°/360°.
+       */
+      m_cog,
+
+      /**
+       * Current magnetic heading in degrees from compass/HDM
+       *
+       * Direct copy of the magnetic heading (Hdm) field from the most recent
+       * position fix. Unlike m_cog which is calculated from position changes,
+       * this represents the actual compass heading direction the vessel is
+       * pointing relative to magnetic north.
+       */
+      m_hdm;
 
       wxDateTime m_ValidFixTime;
       wxDateTime m_cursor_time;
@@ -146,7 +173,19 @@ public:
 protected:
       wxPoint m_cursor_position;
 
-      PlugIn_Position_Fix_Ex m_lastfix, m_lasttimerfix;
+      /**
+       * Current position fix data received from OpenCPN's timer-based updates
+       *
+       * Contains the most recent position fix data received via SetPositionFixEx(),
+       * approximately once per second. This represents the "current" vessel state including
+       * position, course, speed, and heading data.
+       */
+      PlugIn_Position_Fix_Ex m_lastfix,
+
+      /**
+       * Previous position fix data from the last timer cycle.
+       */
+      m_lasttimerfix;
 
 private:
       void SetCursorLatLon(double lat, double lon);

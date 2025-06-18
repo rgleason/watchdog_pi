@@ -25,6 +25,7 @@
  */
 
 #include <map>
+#include <cmath>
 #include <wx/wx.h>
 #include <wx/stdpaths.h>
 
@@ -183,7 +184,7 @@ public:
         m_Course = g_watchdog_pi->m_cog;
     }
 
-    wxString Type() { return _("Course"); }
+    wxString Type() { return _("Course deviation"); }
 
     bool Test() {
         double error = CourseError();
@@ -260,7 +261,7 @@ public:
         const char *mode = e->Attribute("Mode");
         if(!strcasecmp(mode, "Port")) m_Mode = PORT;
         else if(!strcasecmp(mode, "Starboard")) m_Mode = STARBOARD;
-        else if(!strcasecmp(mode, "Starboard")) m_Mode = BOTH;
+        else if(!strcasecmp(mode, "Both")) m_Mode = BOTH;
         else wxLogMessage("Watchdog: " + wxString(_("invalid Course mode")) + ": "
                          + wxString::FromUTF8(mode));
 
@@ -272,9 +273,9 @@ public:
     void SaveConfig(TiXmlElement *c) {
         c->SetAttribute("Type", "Course");
         switch(m_Mode) {
-        case PORT: c->SetAttribute("Mode", "Port");
-        case STARBOARD: c->SetAttribute("Mode", "Starboard");
-        case BOTH: c->SetAttribute("Mode", "Both");
+        case PORT: c->SetAttribute("Mode", "Port"); break;
+        case STARBOARD: c->SetAttribute("Mode", "Starboard"); break;
+        case BOTH: c->SetAttribute("Mode", "Both"); break;
         }
 
         c->SetDoubleAttribute("Tolerance", m_Tolerance);
@@ -284,9 +285,21 @@ public:
 
 private:
     double CourseError() {
-        double error = heading_resolve((m_bGPSCourse ?
-                                        g_watchdog_pi->m_cog :
-                                        g_watchdog_pi->m_hdm) - m_Course);
+        double current_course = m_bGPSCourse ? g_watchdog_pi->m_cog : g_watchdog_pi->m_hdm;
+
+        // Ensure both values are in [0, 360) range to handle edge cases
+        current_course = fmod(current_course + 360.0, 360.0);
+        double target_course = fmod(m_Course + 360.0, 360.0);
+        double error = current_course - target_course;
+        
+        // Normalize the error to the range [-180, 180] for smallest deviation
+        while (error > 180.0) {
+            error -= 360.0;
+        }
+        while (error < -180.0) {
+            error += 360.0;
+        }
+        
         switch(m_Mode) {
         case PORT:      return -error;
         case STARBOARD: return  error;
