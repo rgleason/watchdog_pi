@@ -82,6 +82,11 @@ double heading_resolve(double degrees, double offset)
 
     if (degrees < 0)
         degrees += 360.;
+
+    // Ensure result is always in [0, 360) range to avoid 0°/360° ambiguity
+    if (degrees >= 360.0)
+        degrees -= 360.0;
+
     return degrees;
 }
 
@@ -112,7 +117,7 @@ watchdog_pi::watchdog_pi(void *ppimgr)
     m_lastfix.Lat = NAN;
     m_lasttimerfix.Lat = NAN;
     m_lasttimerfix.FixTime = m_lastfix.FixTime = 0;
-    m_sog = m_cog = m_hdm = 0;
+    m_sog = m_cog = m_hdm = NAN;
     m_declination = NAN;
     m_pypilot_host = "";
 
@@ -365,18 +370,38 @@ void watchdog_pi::OnTimer( wxTimerEvent & )
     if(!isnan(m_lastfix.Lat) && !isnan(m_lasttimerfix.Lat) && dt > 0) {
         /* this way helps avoid surge speed from gps from surfing waves etc... */
         double cog, sog;
+        // Note: DistanceBearingMercator_Plugin return cog=180 if
+        // m_lasttimerfix and m_lastfix are the same.
         DistanceBearingMercator_Plugin(m_lastfix.Lat, m_lastfix.Lon,
                                        m_lasttimerfix.Lat, m_lasttimerfix.Lon, &cog, &sog);
         sog *= (3600.0 / dt);
 
-        if(isnan(m_cog))
-            m_cog = cog, m_sog = sog;
-        else {
-            cog = heading_resolve(cog, m_cog);
-            m_cog = .25*cog + .75*m_cog;
-            m_cog = heading_resolve(m_cog, 180);
-            m_sog = .25*sog + .75*m_sog;
+        // Define minimum meaningful distance threshold (in nautical miles)
+        // Below this threshold, COG calculations become unreliable due to GPS noise
+        const double MIN_MEANINGFUL_DISTANCE = 0.001; // ~1.8 meters
+
+        // Only update COG if we've moved a meaningful distance
+        // For very short distances, GPS noise dominates and COG becomes meaningless
+        if(sog >= MIN_MEANINGFUL_DISTANCE) {
+            if(isnan(m_cog))
+                m_cog = cog, m_sog = sog;
+            else {
+                cog = heading_resolve(cog, m_cog);
+                m_cog = .25*cog + .75*m_cog;
+                m_cog = heading_resolve(m_cog, 180);
+                m_sog = .25*sog + .75*m_sog;
+            }
+        } else {
+            // Distance too small for meaningful COG calculation
+            // Only update SOG, leave COG unchanged to avoid GPS noise
+            if(!isnan(m_sog)) {
+                m_sog = .25*sog + .75*m_sog;
+            } else {
+                m_sog = sog; // First SOG reading
+            }
+            // m_cog remains unchanged when distance is too small
         }
+
         m_hdm = m_lastfix.Hdm;
         m_ValidFixTime = wxDateTime::Now();
     } else {
