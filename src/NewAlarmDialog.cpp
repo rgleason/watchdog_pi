@@ -70,8 +70,12 @@ NewAlarmDialog::NewAlarmDialog(wxWindow* parent)
     index = m_lAlarmType->InsertItem(PYPILOT, _("Pypilot"));
     m_lAlarmType->SetItem(index, 1, _("Monitors autopilot status - hardware errors and steering problems"));
     
+    
     index = m_lAlarmType->InsertItem(RUDDER, _("Rudder"));
     m_lAlarmType->SetItem(index, 1, _("Alerts when rudder angle exceeds set limits"));
+    
+    index = m_lAlarmType->InsertItem(CROSSTRACKERROR, _("Cross Track Error"));
+    m_lAlarmType->SetItem(index, 1, _("Alerts when boat deviates from planned route or track corridor"));
     
     // Auto-size columns
     m_lAlarmType->SetColumnWidth(0, wxLIST_AUTOSIZE);

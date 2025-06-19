@@ -1728,3 +1728,48 @@ RudderPanel::RudderPanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, c
 RudderPanel::~RudderPanel()
 {
 }
+
+XTEPanel::XTEPanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name ) : wxPanel( parent, id, pos, size, style, name )
+{
+	wxFlexGridSizer* fgSizer23;
+	fgSizer23 = new wxFlexGridSizer( 0, 2, 0, 0 );
+	fgSizer23->SetFlexibleDirection( wxBOTH );
+	fgSizer23->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
+
+	m_staticText33 = new wxStaticText( this, wxID_ANY, _("XTE Limit"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText33->Wrap( -1 );
+	fgSizer23->Add( m_staticText33, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+
+	wxFlexGridSizer* fgSizer24;
+	fgSizer24 = new wxFlexGridSizer( 0, 2, 0, 0 );
+	fgSizer24->SetFlexibleDirection( wxBOTH );
+	fgSizer24->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
+
+	m_sXTELimit = new wxSpinCtrlDouble( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0.1, 1000, 100, 0.1 );
+	m_sXTELimit->SetDigits( 1 );
+	fgSizer24->Add( m_sXTELimit, 0, wxALL, 5 );
+
+	wxString m_cXTEUnitsChoices[] = { _("meters"), _("nautical miles") };
+	int m_cXTEUnitsNChoices = sizeof( m_cXTEUnitsChoices ) / sizeof( wxString );
+	m_cXTEUnits = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_cXTEUnitsNChoices, m_cXTEUnitsChoices, 0 );
+	m_cXTEUnits->SetSelection( 0 );
+	fgSizer24->Add( m_cXTEUnits, 0, wxALL, 5 );
+
+	fgSizer23->Add( fgSizer24, 1, wxEXPAND, 5 );
+
+	m_staticText35 = new wxStaticText( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText35->Wrap( -1 );
+	fgSizer23->Add( m_staticText35, 0, wxALL, 5 );
+
+	m_staticText36 = new wxStaticText( this, wxID_ANY, _("Alerts when boat drifts outside planned track corridor.\nRequires waypoint navigation.\nUses XTE sentence for cross-track error, RMB/ABF for bearing/distance."), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText36->Wrap( -1 );
+	fgSizer23->Add( m_staticText36, 0, wxALL|wxALIGN_LEFT, 5 );
+
+	this->SetSizer( fgSizer23 );
+	this->Layout();
+	fgSizer23->Fit( this );
+}
+
+XTEPanel::~XTEPanel()
+{
+}

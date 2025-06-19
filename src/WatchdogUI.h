@@ -580,3 +580,25 @@ class RudderPanel : public wxPanel
 
 };
 
+///////////////////////////////////////////////////////////////////////////////
+/// Class XTEPanel
+///////////////////////////////////////////////////////////////////////////////
+class XTEPanel : public wxPanel
+{
+	private:
+
+	protected:
+		wxStaticText* m_staticText33;
+		wxStaticText* m_staticText35;
+		wxStaticText* m_staticText36;
+
+	public:
+		wxSpinCtrlDouble* m_sXTELimit;
+		wxChoice* m_cXTEUnits;
+
+		XTEPanel( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxTAB_TRAVERSAL, const wxString& name = wxEmptyString );
+
+		~XTEPanel();
+
+};
+

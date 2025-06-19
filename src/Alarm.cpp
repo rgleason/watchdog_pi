@@ -2989,6 +2989,290 @@ private:
     }
 };
 
+class XTEAlarm : public Alarm
+{
+public:
+    XTEAlarm() : Alarm(true), m_XTELimit(100.0), m_XTEUnits(0), 
+                 m_current_xte(NAN), m_last_xte_time(wxDateTime::Now()),
+                 m_bearing_to_waypoint(NAN), m_distance_to_waypoint(NAN),
+                 m_last_nav_time(wxDateTime::Now()), m_nav_sentence_priority(99) {}
+
+    wxString Type() { return _("Cross Track Error"); }
+
+    bool Test() {
+        // Check if XTE data is recent (within last 30 seconds)
+        wxDateTime now = wxDateTime::Now();
+        wxTimeSpan time_since_last = now - m_last_xte_time;
+        if(time_since_last.GetSeconds() > 30) {
+            return m_bNoData; // No recent XTE data
+        }
+        
+        if(isnan(m_current_xte))
+            return m_bNoData;
+        
+        double limit = m_XTELimit;
+        if(m_XTEUnits == 1) // nautical miles
+            limit *= 1853.248; // convert to meters
+        else // already in meters for display, but XTE is in nautical miles
+            limit = limit / 1853.248; // convert limit to nautical miles for comparison
+        
+        return fabs(m_current_xte) > limit;
+    }
+
+    wxString GetStatus() {
+        // Check if XTE data is recent
+        wxDateTime now = wxDateTime::Now();
+        wxTimeSpan time_since_last = now - m_last_xte_time;
+        if(time_since_last.GetSeconds() > 30 || isnan(m_current_xte)) {
+            return "N/A";
+        }
+        
+        double display_xte = fabs(m_current_xte);
+        wxString units = "nm";
+        
+        if(m_XTEUnits == 0) { // display in meters
+            display_xte *= 1853.248; // convert from nautical miles to meters
+            units = "m";
+        }
+        
+        wxString fmt("%.2f");
+        wxString s = wxString::Format(fmt + " %s", display_xte, units);
+        
+        // Add direction indicator
+        if(m_current_xte < 0) s = "L " + s; // Left/Port
+        else if(m_current_xte > 0) s = "R " + s; // Right/Starboard
+        
+        // Add bearing information for debugging (if available and recent)
+        wxTimeSpan nav_time_since_last = now - m_last_nav_time;
+        if(nav_time_since_last.GetSeconds() <= 30 && !isnan(m_bearing_to_waypoint)) {
+            s += wxString::Format(" (BRG:%.0f°", m_bearing_to_waypoint);
+            if(!isnan(m_distance_to_waypoint)) {
+                s += wxString::Format(" %.1fnm", m_distance_to_waypoint);
+            }
+            s += ")";
+        }
+
+        return s;
+    }
+
+    void Render(piDC &dc, PlugIn_ViewPort &vp) {
+        // For XTE visualization, draw a track corridor
+        PlugIn_Position_Fix_Ex lastfix = g_watchdog_pi->LastFix();
+        if(isnan(lastfix.Lat) || isnan(lastfix.Lon))
+            return;
+
+        wxPoint center;
+        GetCanvasPixLL(&vp, &center, lastfix.Lat, lastfix.Lon);
+
+        // Check if we have recent bearing data for proper corridor orientation
+        wxDateTime now = wxDateTime::Now();
+        wxTimeSpan nav_time_since_last = now - m_last_nav_time;
+        bool have_bearing = (nav_time_since_last.GetSeconds() <= 30 && !isnan(m_bearing_to_waypoint));
+
+        double limit = m_XTELimit;
+        if(m_XTEUnits == 0) // meters
+            limit = limit / 1853.248; // convert to nautical miles for calculation
+        // limit is now in nautical miles
+
+        dc.SetBrush(*wxTRANSPARENT_BRUSH);
+        if(m_bEnabled) {
+            if(m_bFired)
+                dc.SetPen(wxPen(*wxRED, 2));
+            else
+                dc.SetPen(wxPen(*wxGREEN, 2));
+        } else
+            dc.SetPen(wxPen(wxColour(128, 192, 0, 128), 2, wxPENSTYLE_LONG_DASH));
+
+        if(have_bearing) {
+            // Draw proper oriented corridor based on bearing to waypoint
+
+            // Calculate corridor length: extend to waypoint but with minimum/maximum limits
+            double corridor_length = 1.0; // Default 1 nm minimum
+            if(!isnan(m_distance_to_waypoint)) {
+                corridor_length = wxMax(0.2, wxMin(m_distance_to_waypoint, 5.0)); // 0.2-5 nm range
+            }
+
+            // Calculate the four corners of the XTE corridor
+            // The corridor is centered on the bearing line with XTE limits on each side
+
+            // Calculate perpendicular bearing (90 degrees offset for port/starboard)
+            double perp_bearing_port = m_bearing_to_waypoint - 90.0;
+            double perp_bearing_stbd = m_bearing_to_waypoint + 90.0;
+
+            // Normalize bearings to 0-360 range
+            if(perp_bearing_port < 0) perp_bearing_port += 360.0;
+            if(perp_bearing_stbd >= 360) perp_bearing_stbd -= 360.0;
+
+            // Calculate the four corners of the corridor
+            double lat1, lon1, lat2, lon2, lat3, lon3, lat4, lon4;
+
+            // Start position (vessel position) - port and starboard limits
+            PositionBearingDistanceMercator_Plugin(lastfix.Lat, lastfix.Lon, perp_bearing_port, limit, &lat1, &lon1);
+            PositionBearingDistanceMercator_Plugin(lastfix.Lat, lastfix.Lon, perp_bearing_stbd, limit, &lat2, &lon2);
+
+            // End position (forward along bearing) - port and starboard limits
+            double end_lat, end_lon;
+            PositionBearingDistanceMercator_Plugin(lastfix.Lat, lastfix.Lon, m_bearing_to_waypoint, corridor_length, &end_lat, &end_lon);
+            PositionBearingDistanceMercator_Plugin(end_lat, end_lon, perp_bearing_port, limit, &lat3, &lon3);
+            PositionBearingDistanceMercator_Plugin(end_lat, end_lon, perp_bearing_stbd, limit, &lat4, &lon4);
+
+            // Convert to screen coordinates
+            wxPoint p1, p2, p3, p4;
+            GetCanvasPixLL(&vp, &p1, lat1, lon1); // Vessel port limit
+            GetCanvasPixLL(&vp, &p2, lat2, lon2); // Vessel starboard limit
+            GetCanvasPixLL(&vp, &p3, lat3, lon3); // Forward port limit
+            GetCanvasPixLL(&vp, &p4, lat4, lon4); // Forward starboard limit
+
+            // Draw the corridor as parallel lines
+            dc.DrawLine(p1.x, p1.y, p3.x, p3.y); // Port corridor line
+            dc.DrawLine(p2.x, p2.y, p4.x, p4.y); // Starboard corridor line
+
+            // Draw end caps
+            dc.DrawLine(p1.x, p1.y, p2.x, p2.y); // Vessel position end cap
+            dc.DrawLine(p3.x, p3.y, p4.x, p4.y); // Forward end cap
+
+            // Draw center line with direction arrow
+            wxPoint center_start = wxPoint((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+            wxPoint center_end = wxPoint((p3.x + p4.x) / 2, (p3.y + p4.y) / 2);
+
+            dc.SetPen(wxPen(dc.GetPen().GetColour(), 1, wxPENSTYLE_DOT));
+            dc.DrawLine(center_start.x, center_start.y, center_end.x, center_end.y);
+
+            // Simple arrow head at the end
+            int arrow_size = 8;
+            wxPoint arrow_vec = center_end - center_start;
+            double arrow_length = sqrt(arrow_vec.x * arrow_vec.x + arrow_vec.y * arrow_vec.y);
+            if(arrow_length > arrow_size) {
+                arrow_vec.x = (arrow_vec.x * arrow_size) / arrow_length;
+                arrow_vec.y = (arrow_vec.y * arrow_size) / arrow_length;
+
+                wxPoint arrow1(center_end.x - arrow_vec.x - arrow_vec.y/2,
+                              center_end.y - arrow_vec.y + arrow_vec.x/2);
+                wxPoint arrow2(center_end.x - arrow_vec.x + arrow_vec.y/2,
+                              center_end.y - arrow_vec.y - arrow_vec.x/2);
+
+                dc.SetPen(wxPen(dc.GetPen().GetColour(), 2));
+                dc.DrawLine(center_end.x, center_end.y, arrow1.x, arrow1.y);
+                dc.DrawLine(center_end.x, center_end.y, arrow2.x, arrow2.y);
+            }
+
+            // Draw current XTE position if we have valid data
+            wxTimeSpan time_since_last = now - m_last_xte_time;
+            if(time_since_last.GetSeconds() <= 30 && !isnan(m_current_xte)) {
+                // Position XTE indicator perpendicular to the bearing line
+                double xte_bearing = (m_current_xte < 0) ? perp_bearing_port : perp_bearing_stbd;
+                double xte_lat, xte_lon;
+                PositionBearingDistanceMercator_Plugin(lastfix.Lat, lastfix.Lon, xte_bearing, fabs(m_current_xte), &xte_lat, &xte_lon);
+
+                wxPoint xte_point;
+                GetCanvasPixLL(&vp, &xte_point, xte_lat, xte_lon);
+
+                dc.SetPen(wxPen(*wxBLUE, 3));
+                dc.DrawCircle(xte_point, 5);
+            }
+        }
+    }
+
+    wxWindow *OpenPanel(wxWindow *parent) {
+        XTEPanel *panel = new XTEPanel(parent);
+        panel->m_sXTELimit->SetValue(m_XTELimit);
+        panel->m_cXTEUnits->SetSelection(m_XTEUnits);
+        return panel;
+    }
+
+    void SavePanel(wxWindow *p) {
+        XTEPanel *panel = (XTEPanel*)p;
+        m_XTELimit = panel->m_sXTELimit->GetValue();
+        m_XTEUnits = panel->m_cXTEUnits->GetSelection();
+    }
+
+    void LoadConfig(TiXmlElement *e) {
+        e->Attribute("XTELimit", &m_XTELimit);
+        e->Attribute("XTEUnits", &m_XTEUnits);
+
+        // Navigation data doesn't need to be saved/loaded as it's runtime data
+        // Reset to defaults
+        m_bearing_to_waypoint = NAN;
+        m_distance_to_waypoint = NAN;
+        m_last_nav_time = wxDateTime::Now();
+        m_nav_sentence_priority = 99; // Allow any sentence type initially
+    }
+
+    void SaveConfig(TiXmlElement *c) {
+        c->SetAttribute("Type", "XTE");
+        c->SetDoubleAttribute("XTELimit", m_XTELimit);
+        c->SetAttribute("XTEUnits", m_XTEUnits);
+    }
+
+    void NMEAString(const wxString &string) {
+        wxString str = string;
+        NMEA0183 nmea;
+        nmea << str;
+        if(!nmea.PreParse())
+            return;
+
+        // Parse XTE sentence
+        if(nmea.LastSentenceIDReceived == "XTE" && nmea.Parse()) {
+            if(nmea.Xte.IsLoranBlinkOK == NTrue && nmea.Xte.IsLoranCCycleLockOK == NTrue) {
+                // XTE magnitude is in nautical miles
+                double xte_magnitude = nmea.Xte.CrossTrackErrorDistance;
+                
+                // Direction: L = Left (negative), R = Right (positive)
+                if(nmea.Xte.DirectionToSteer == Left) {
+                    m_current_xte = -xte_magnitude;
+                } else if(nmea.Xte.DirectionToSteer == Right) {
+                    m_current_xte = xte_magnitude;
+                } else {
+                    m_current_xte = xte_magnitude; // Default to positive if unclear
+                }
+                
+                m_last_xte_time = wxDateTime::Now();
+            }
+        }
+
+        // Parse RMB sentence (highest priority for bearing/distance)
+        else if(nmea.LastSentenceIDReceived == "RMB" && nmea.Parse()) {
+            if(nmea.Rmb.IsDataValid == NTrue && m_nav_sentence_priority >= 1) {
+                m_bearing_to_waypoint = nmea.Rmb.BearingToDestinationDegreesTrue;
+                m_distance_to_waypoint = nmea.Rmb.RangeToDestinationNauticalMiles;
+                m_last_nav_time = wxDateTime::Now();
+                m_nav_sentence_priority = 1; // RMB has highest priority
+            }
+        }
+
+        // Parse APB sentence (lower priority - bearing only, no distance)
+        else if(nmea.LastSentenceIDReceived == "APB" && nmea.Parse()) {
+            if(nmea.Apb.IsLoranBlinkOK == NTrue && nmea.Apb.IsLoranCCycleLockOK == NTrue &&
+               m_nav_sentence_priority >= 2) {
+                // APB provides bearing from present position to destination
+                m_bearing_to_waypoint = nmea.Apb.BearingPresentPositionToDestination;
+                // APB doesn't provide distance directly, keep existing distance if available
+                m_last_nav_time = wxDateTime::Now();
+                m_nav_sentence_priority = 2; // APB has lower priority than RMB
+            }
+        }
+
+        // Reset priority periodically to allow lower priority sentences when higher ones are stale
+        wxDateTime now = wxDateTime::Now();
+        wxTimeSpan nav_time_since_last = now - m_last_nav_time;
+        if(nav_time_since_last.GetSeconds() > 10) {
+            m_nav_sentence_priority = 99; // Allow any sentence type
+        }
+    }
+
+private:
+    double m_XTELimit;
+    int m_XTEUnits; // 0 = meters, 1 = nautical miles  
+    double m_current_xte; // Current XTE in nautical miles, negative = left, positive = right
+    wxDateTime m_last_xte_time; // Time of last XTE update
+
+    // Navigation data for proper corridor rendering
+    double m_bearing_to_waypoint; // Bearing to active waypoint in degrees
+    double m_distance_to_waypoint; // Distance to active waypoint in nautical miles
+    wxDateTime m_last_nav_time; // Time of last navigation data update
+    int m_nav_sentence_priority; // Priority of last received sentence (1=RMB, 2=APB)
+};
+
 
 ////////// Alarm Base Class /////////////////
 std::vector<Alarm*> Alarm::s_Alarms;
@@ -3030,6 +3314,7 @@ void Alarm::LoadConfigAll()
             else if(!strcasecmp(type, "Boundary")) alarm = Alarm::NewAlarm(BOUNDARY);
 //            else if(!strcasecmp(type, "pypilot")) alarm = Alarm::NewAlarm(PYPILOT);
 //            else if(!strcasecmp(type, "Rudder")) alarm = Alarm::NewAlarm(RUDDER);
+            else if(!strcasecmp(type, "XTE")) alarm = Alarm::NewAlarm(CROSSTRACKERROR);
             else {
                 wxLogMessage("Watchdog: " + wxString(_("invalid alarm type")) + ": " + wxString::FromUTF8(type));
                 continue;
@@ -3118,6 +3403,7 @@ Alarm *Alarm::NewAlarm(enum AlarmType type)
     case BOUNDARY: alarm = new BoundaryAlarm; break;
     case PYPILOT: alarm = new pypilotAlarm; break;
     case RUDDER:   alarm = new RudderAlarm; break;
+    case CROSSTRACKERROR:      alarm = new XTEAlarm; break;
     default:  wxLogMessage("Invalid Alarm Type"); return NULL;
     }
 
