@@ -3061,9 +3061,6 @@ public:
         if(isnan(lastfix.Lat) || isnan(lastfix.Lon))
             return;
 
-        wxPoint center;
-        GetCanvasPixLL(&vp, &center, lastfix.Lat, lastfix.Lon);
-
         // Check if we have recent bearing data for proper corridor orientation
         wxDateTime now = wxDateTime::Now();
         wxTimeSpan nav_time_since_last = now - m_last_nav_time;
@@ -3085,15 +3082,11 @@ public:
 
         if(have_bearing) {
             // Draw proper oriented corridor based on bearing to waypoint
+            // The corridor represents the intended track with XTE limits, independent of boat position
 
-            // Calculate corridor length: extend to waypoint but with minimum/maximum limits
-            double corridor_length = 1.0; // Default 1 nm minimum
-            if(!isnan(m_distance_to_waypoint)) {
-                corridor_length = wxMax(0.2, wxMin(m_distance_to_waypoint, 5.0)); // 0.2-5 nm range
-            }
-
-            // Calculate the four corners of the XTE corridor
-            // The corridor is centered on the bearing line with XTE limits on each side
+            // Calculate corridor length: limit to reasonable visualization distance
+            // Maximum 1 nm forward for practical display, regardless of waypoint distance
+            double corridor_length = 1.0; // Always 1 nm forward
 
             // Calculate perpendicular bearing (90 degrees offset for port/starboard)
             double perp_bearing_port = m_bearing_to_waypoint - 90.0;
@@ -3103,35 +3096,58 @@ public:
             if(perp_bearing_port < 0) perp_bearing_port += 360.0;
             if(perp_bearing_stbd >= 360) perp_bearing_stbd -= 360.0;
 
+            // Calculate the center line of the intended track.
+            // This is independent of the boat's current position.
+            // Use the XTE data to find the boat's position on the intended track
+            double track_center_lat, track_center_lon;
+            if(!isnan(m_current_xte)) {
+                // Use XTE to find the correct position on the bearing line
+                // Calculate the perpendicular offset direction (opposite of XTE direction)
+                double offset_bearing = (m_current_xte < 0) ? perp_bearing_stbd : perp_bearing_port;
+                // Project from boat position back to the center line
+                PositionBearingDistanceMercator_Plugin(lastfix.Lat, lastfix.Lon, offset_bearing, fabs(m_current_xte), &track_center_lat, &track_center_lon);
+            } else {
+                // No XTE data - assume boat is on the center line
+                track_center_lat = lastfix.Lat;
+                track_center_lon = lastfix.Lon;
+            }
+
+            // Build the corridor centered on the intended track line
+            // Start point of corridor (at boat's along-track position)
+            double corridor_start_lat = track_center_lat;
+            double corridor_start_lon = track_center_lon;
+
+            // End point of corridor (toward waypoint)
+            double corridor_end_lat, corridor_end_lon;
+            PositionBearingDistanceMercator_Plugin(corridor_start_lat, corridor_start_lon, m_bearing_to_waypoint, corridor_length, &corridor_end_lat, &corridor_end_lon);
+
             // Calculate the four corners of the corridor
             double lat1, lon1, lat2, lon2, lat3, lon3, lat4, lon4;
 
-            // Start position (vessel position) - port and starboard limits
-            PositionBearingDistanceMercator_Plugin(lastfix.Lat, lastfix.Lon, perp_bearing_port, limit, &lat1, &lon1);
-            PositionBearingDistanceMercator_Plugin(lastfix.Lat, lastfix.Lon, perp_bearing_stbd, limit, &lat2, &lon2);
+            // Start of corridor - port and starboard limits
+            PositionBearingDistanceMercator_Plugin(corridor_start_lat, corridor_start_lon, perp_bearing_port, limit, &lat1, &lon1);
+            PositionBearingDistanceMercator_Plugin(corridor_start_lat, corridor_start_lon, perp_bearing_stbd, limit, &lat2, &lon2);
 
-            // End position (forward along bearing) - port and starboard limits
-            double end_lat, end_lon;
-            PositionBearingDistanceMercator_Plugin(lastfix.Lat, lastfix.Lon, m_bearing_to_waypoint, corridor_length, &end_lat, &end_lon);
-            PositionBearingDistanceMercator_Plugin(end_lat, end_lon, perp_bearing_port, limit, &lat3, &lon3);
-            PositionBearingDistanceMercator_Plugin(end_lat, end_lon, perp_bearing_stbd, limit, &lat4, &lon4);
+            // End of corridor - port and starboard limits  
+            PositionBearingDistanceMercator_Plugin(corridor_end_lat, corridor_end_lon, perp_bearing_port, limit, &lat3, &lon3);
+            PositionBearingDistanceMercator_Plugin(corridor_end_lat, corridor_end_lon, perp_bearing_stbd, limit, &lat4, &lon4);
 
             // Convert to screen coordinates
             wxPoint p1, p2, p3, p4;
-            GetCanvasPixLL(&vp, &p1, lat1, lon1); // Vessel port limit
-            GetCanvasPixLL(&vp, &p2, lat2, lon2); // Vessel starboard limit
-            GetCanvasPixLL(&vp, &p3, lat3, lon3); // Forward port limit
-            GetCanvasPixLL(&vp, &p4, lat4, lon4); // Forward starboard limit
+            GetCanvasPixLL(&vp, &p1, lat1, lon1); // Start port limit
+            GetCanvasPixLL(&vp, &p2, lat2, lon2); // Start starboard limit
+            GetCanvasPixLL(&vp, &p3, lat3, lon3); // End port limit
+            GetCanvasPixLL(&vp, &p4, lat4, lon4); // End starboard limit
 
             // Draw the corridor as parallel lines
             dc.DrawLine(p1.x, p1.y, p3.x, p3.y); // Port corridor line
             dc.DrawLine(p2.x, p2.y, p4.x, p4.y); // Starboard corridor line
 
             // Draw end caps
-            dc.DrawLine(p1.x, p1.y, p2.x, p2.y); // Vessel position end cap
+            dc.DrawLine(p1.x, p1.y, p2.x, p2.y); // Start end cap (at boat's along-track position)
             dc.DrawLine(p3.x, p3.y, p4.x, p4.y); // Forward end cap
 
-            // Draw center line with direction arrow
+            // Draw center line (the intended bearing line) with direction arrow
             wxPoint center_start = wxPoint((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
             wxPoint center_end = wxPoint((p3.x + p4.x) / 2, (p3.y + p4.y) / 2);
 
@@ -3156,19 +3172,34 @@ public:
                 dc.DrawLine(center_end.x, center_end.y, arrow2.x, arrow2.y);
             }
 
-            // Draw current XTE position if we have valid data
+            // Draw the actual boat position (which may be off the center line)
+            wxPoint boat_pos;
+            GetCanvasPixLL(&vp, &boat_pos, lastfix.Lat, lastfix.Lon);
+            dc.SetPen(wxPen(*wxBLACK, 3));
+            dc.DrawCircle(boat_pos, 4);
+
+            // Draw current XTE indicator if we have valid data
             wxTimeSpan time_since_last = now - m_last_xte_time;
             if(time_since_last.GetSeconds() <= 30 && !isnan(m_current_xte)) {
-                // Position XTE indicator perpendicular to the bearing line
-                double xte_bearing = (m_current_xte < 0) ? perp_bearing_port : perp_bearing_stbd;
-                double xte_lat, xte_lon;
-                PositionBearingDistanceMercator_Plugin(lastfix.Lat, lastfix.Lon, xte_bearing, fabs(m_current_xte), &xte_lat, &xte_lon);
+                // Draw a line from the boat to its projected position on the center line
+                wxPoint track_point;
+                GetCanvasPixLL(&vp, &track_point, track_center_lat, track_center_lon);
 
-                wxPoint xte_point;
-                GetCanvasPixLL(&vp, &xte_point, xte_lat, xte_lon);
-
+                // Draw XTE line from boat to track center
+                dc.SetPen(wxPen(*wxBLUE, 2, wxPENSTYLE_SOLID));
+                dc.DrawLine(boat_pos.x, boat_pos.y, track_point.x, track_point.y);
+                
+                // Draw where boat should be on track
                 dc.SetPen(wxPen(*wxBLUE, 3));
-                dc.DrawCircle(xte_point, 5);
+                dc.DrawCircle(track_point, 3);
+                
+                // Add XTE value as text near the line
+                wxString xte_text = wxString::Format("XTE: %.2f", fabs(m_current_xte));
+                if(m_XTEUnits == 0) xte_text += "m"; else xte_text += "nm";
+                
+                wxPoint text_pos = wxPoint((boat_pos.x + track_point.x) / 2, (boat_pos.y + track_point.y) / 2 - 15);
+                dc.SetTextForeground(*wxBLUE);
+                dc.DrawText(xte_text, text_pos.x, text_pos.y);
             }
         }
     }

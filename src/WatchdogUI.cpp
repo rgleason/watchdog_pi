@@ -887,7 +887,7 @@ SpeedPanel::SpeedPanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, con
 	m_staticText44->Wrap( -1 );
 	fgSizer14->Add( m_staticText44, 0, wxALL, 5 );
 
-	m_tSpeed = new wxTextCtrl( sbSizer7->GetStaticBox(), wxID_ANY, _("1"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_tSpeed = new wxTextCtrl( sbSizer7->GetStaticBox(), wxID_ANY, _("1"), wxDefaultPosition, wxSize(80,-1), 0 );
 	#ifdef __WXGTK__
 	if ( !m_tSpeed->HasFlag( wxTE_MULTILINE ) )
 	{
@@ -1074,7 +1074,7 @@ WeatherPanelBase::WeatherPanelBase( wxWindow* parent, wxWindowID id, const wxPoi
 	m_staticText511->Wrap( -1 );
 	fgSizer14->Add( m_staticText511, 0, wxALL, 5 );
 
-	m_tValue = new wxTextCtrl( sbSizer7->GetStaticBox(), wxID_ANY, _("1010"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_tValue = new wxTextCtrl( sbSizer7->GetStaticBox(), wxID_ANY, _("1010"), wxDefaultPosition, wxSize(80,-1), 0 );
 	fgSizer14->Add( m_tValue, 0, wxALL, 5 );
 
 	m_stUnits = new wxStaticText( sbSizer7->GetStaticBox(), wxID_ANY, _("mBar/C/%"), wxDefaultPosition, wxDefaultSize, 0 );
@@ -1234,7 +1234,7 @@ DepthPanel::DepthPanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, con
 	m_staticText44->Wrap( -1 );
 	fgSizer14->Add( m_staticText44, 0, wxALL, 5 );
 
-	m_tDepth = new wxTextCtrl( sbSizer7->GetStaticBox(), wxID_ANY, _("1"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_tDepth = new wxTextCtrl( sbSizer7->GetStaticBox(), wxID_ANY, _("1"), wxDefaultPosition, wxSize(80,-1), 0 );
 	#ifdef __WXGTK__
 	if ( !m_tDepth->HasFlag( wxTE_MULTILINE ) )
 	{
@@ -1310,7 +1310,7 @@ LandFallPanel::LandFallPanel( wxWindow* parent, wxWindowID id, const wxPoint& po
 	m_rbDistance = new wxRadioButton( this, wxID_ANY, _("GPS fix is <"), wxDefaultPosition, wxDefaultSize, 0 );
 	fgSizer10->Add( m_rbDistance, 0, wxALL, 5 );
 
-	m_tDistance = new wxTextCtrl( this, wxID_ANY, _("3"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_tDistance = new wxTextCtrl( this, wxID_ANY, _("3"), wxDefaultPosition, wxSize(80,-1), 0 );
 	#ifdef __WXGTK__
 	if ( !m_tDistance->HasFlag( wxTE_MULTILINE ) )
 	{
@@ -1379,7 +1379,7 @@ BoundaryPanel::BoundaryPanel( wxWindow* parent, wxWindowID id, const wxPoint& po
 	m_rbDistance = new wxRadioButton( this, GPSFIX, _("GPS fix is <"), wxDefaultPosition, wxDefaultSize, 0 );
 	fgSizer10->Add( m_rbDistance, 0, wxALL, 5 );
 
-	m_tDistance = new wxTextCtrl( this, wxID_ANY, _("3"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_tDistance = new wxTextCtrl( this, wxID_ANY, _("3"), wxDefaultPosition, wxSize(80,-1), 0 );
 	#ifdef __WXGTK__
 	if ( !m_tDistance->HasFlag( wxTE_MULTILINE ) )
 	{
