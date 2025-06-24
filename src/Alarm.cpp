@@ -182,6 +182,7 @@ class CourseAlarm : public Alarm
 public:
     CourseAlarm() : Alarm(true), m_Mode(BOTH), m_Tolerance(20), m_bGPSCourse(true) {
         m_Course = g_watchdog_pi->m_cog;
+        m_rmc_cog = NAN;
     }
 
     wxString Type() { return _("Course deviation"); }
@@ -287,6 +288,11 @@ private:
     double CourseError() {
         double current_course = m_bGPSCourse ? g_watchdog_pi->m_cog : g_watchdog_pi->m_hdm;
 
+        // If GPSCourse is active, and m_rmc_cog is available, then use m_rmc
+        if (m_bGPSCourse && !isnan(m_rmc_cog)) {
+            current_course = m_rmc_cog;
+        }
+
         // Ensure both values are in [0, 360) range to handle edge cases
         current_course = fmod(current_course + 360.0, 360.0);
         double target_course = fmod(m_Course + 360.0, 360.0);
@@ -307,8 +313,22 @@ private:
         }
     }
 
+    void NMEAString(const wxString& string) {
+        wxString str = string;
+        NMEA0183 nmea;
+        nmea << str;
+
+        if (!nmea.PreParse())
+            return;
+
+        if (nmea.LastSentenceIDReceived == "RMC" && nmea.Parse() && nmea.Rmc.IsDataValid == NTrue) {
+            m_rmc_cog = nmea.Rmc.TrackMadeGoodDegreesTrue;
+        }
+    }
+
+
     enum Mode { PORT, STARBOARD, BOTH } m_Mode;
-    double m_Tolerance, m_Course;
+    double m_Tolerance, m_Course, m_rmc_cog;
     bool m_bGPSCourse;
 };
 
