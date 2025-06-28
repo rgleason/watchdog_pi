@@ -291,9 +291,6 @@ private:
         // If GPSCourse is active, and m_rmc_cog is available, then use m_rmc
         if (m_bGPSCourse && !isnan(m_rmc_cog)) {
             current_course = m_rmc_cog;
-            wxLogMessage("Watchdog_pi uses RMC");
-        } else {
-            wxLogMessage("Watchdog_pi is not using RMC");
         }
 
         // Ensure both values are in [0, 360) range to handle edge cases
