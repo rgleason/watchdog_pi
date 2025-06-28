@@ -96,7 +96,7 @@ set(ALPHA "alpha") #Standard Repos
 set(CLOUDSMITH_BASE_REPOSITORY "watchdog")  #without the pi
 
 # Set the following to use OpenCPN cloudsmith repositories instead of own repositories
-set(CLOUDSMITH_USER "karma")
+set(CLOUDSMITH_USER "pa2wlt")
 # set(CLOUDSMITH_USER "rick-gleason")
 
 set(XML_INFO_URL
