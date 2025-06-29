@@ -301,7 +301,12 @@ void WatchdogDialog::OnNew( wxCommandEvent& event )
     if(dlg.ShowModal() == wxID_CANCEL)
         return;
 
-    Alarm *alarm = Alarm::NewAlarm((AlarmType)dlg.m_lAlarmType->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED));
+
+    int type = dlg.GetSelectedAlarmType();
+    if(type < 0)
+        return;
+
+    Alarm *alarm = Alarm::NewAlarm((AlarmType)type);
     if(!alarm) return;
 
     EditAlarmDialog edlg(this, alarm);
