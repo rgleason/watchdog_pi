@@ -38,4 +38,15 @@ public:
     NewAlarmDialog(wxWindow* parent);
 
     void OnDoubleClick( wxMouseEvent& event ) { EndModal(wxID_OK); }
+    int GetSelectedAlarmType() const; // added to sort alarmtypes alphabetically
+
+private:
+    // added to sort alarmtypes alphabetically 
+    struct AlarmTypeEntry {
+        int id;
+        wxString label;
+        wxString description;
+    };
+
+    std::vector<AlarmTypeEntry> m_alarmTypeList;
 };
