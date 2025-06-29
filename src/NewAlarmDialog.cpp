@@ -26,6 +26,7 @@
 
 #include "watchdog_pi.h"
 #include "NewAlarmDialog.h"
+#include <algorithm>
 
 NewAlarmDialog::NewAlarmDialog(wxWindow* parent)
     : NewAlarmDialogBase(parent)
